@@ -10,6 +10,8 @@ import {
   IStockMovement,
   ICreateStockMovement,
 } from '../interfaces/IStockMovement.js';
+import { v4 as uuidv4 } from 'uuid';
+import { format } from 'date-fns';
 
 class InvoiceService implements IInvoiceService {
   private invoiceRepository: InvoiceRepository;
@@ -43,6 +45,10 @@ class InvoiceService implements IInvoiceService {
       }
     }
 
+    const datePart = format(new Date(), 'yyyyMMdd');
+    const randomPart = uuidv4().substring(0, 8).toUpperCase();
+    invoiceData.invoiceNumber = `INV-${datePart}-${randomPart}`;
+
     const newInvoice = await this.invoiceRepository.create(invoiceData);
 
     for (const item of newInvoice.products) {
@@ -61,7 +67,7 @@ class InvoiceService implements IInvoiceService {
           quantity: item.quantity,
           type: 'out',
           reason: 'Sale',
-          remarks: `Invoice ${newInvoice._id}`,
+          remarks: `Invoice ${newInvoice.invoiceNumber}`,
         };
         await this.stockMovementRepository.create(stockMovementData);
       }
@@ -102,7 +108,7 @@ class InvoiceService implements IInvoiceService {
           quantity: item.quantity,
           type: 'in',
           source: 'Invoice Cancellation',
-          remarks: `Invoice ${invoice._id} cancelled`,
+          remarks: `Invoice ${invoice.invoiceNumber} cancelled`,
         };
         await this.stockMovementRepository.create(stockMovementData);
       }

@@ -1,7 +1,9 @@
 import ProductRepository from '../repositories/ProductRepository.js';
 import Product from '../models/Product.js';
-import { IProduct } from '../interfaces/IProduct.js';
+import { IProduct, ICreateProduct } from '../interfaces/IProduct.js';
 import { IProductService } from '../interfaces/IServiceInterface/IProductService.js';
+import { v4 as uuidv4 } from 'uuid';
+import { format } from 'date-fns';
 
 class ProductService implements IProductService {
   private productRepository: ProductRepository;
@@ -10,7 +12,13 @@ class ProductService implements IProductService {
     this.productRepository = productRepository;
   }
 
-  async createProduct(productData: IProduct): Promise<IProduct> {
+  async createProduct(productData: ICreateProduct): Promise<IProduct> {
+    if (!productData.productId) {
+      const datePart = format(new Date(), 'yyyyMMdd');
+      const randomPart = uuidv4().substring(0, 6).toUpperCase();
+      productData.productId = `P-${datePart}-${randomPart}`;
+    }
+
     const existingProduct = await this.productRepository.findByProductId(
       productData.productId,
     );
@@ -18,9 +26,12 @@ class ProductService implements IProductService {
       throw new Error('Product with this productId already exists.');
     }
 
-    productData.currentStock = productData.initialStock;
+    const productToCreate = {
+      ...productData,
+      currentStock: productData.initialStock,
+    };
 
-    return this.productRepository.create(productData);
+    return this.productRepository.create(productToCreate as IProduct);
   }
 
   async getProducts(): Promise<IProduct[]> {

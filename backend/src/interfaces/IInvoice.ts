@@ -8,6 +8,7 @@ export interface IInvoiceProduct {
 }
 
 export interface IInvoice extends Document {
+  invoiceNumber: string;
   customerInfo: {
     name: string;
     address?: string;

@@ -27,6 +27,11 @@ const invoiceProductSchema: Schema<IInvoiceProduct> = new Schema(
 
 const invoiceSchema: Schema<IInvoice> = new Schema(
   {
+    invoiceNumber: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     customerInfo: {
       name: { type: String, required: true },
       address: { type: String },

@@ -12,3 +12,12 @@ export interface IProduct extends Document {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export interface ICreateProduct {
+  productId?: string;
+  name: string;
+  category: string;
+  unit: string;
+  initialStock: number;
+  price: number;
+}
