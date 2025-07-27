@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import morgan from 'morgan';
 import cors from 'cors';
 import connectDB from './config/db.js';
-// import routes from './routes/index.js';
+import routes from './routes/index.js';
 import errorHandler from './middlewares/errorHandler.js';
 
 dotenv.config();
@@ -21,7 +21,7 @@ if (process.env.NODE_ENV === 'development') {
 
 connectDB(); //Connect DB
 
-// app.use('/', routes);
+app.use('/api', routes);
 
 app.use(errorHandler);
 
