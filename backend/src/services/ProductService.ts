@@ -23,6 +23,10 @@ class ProductService implements IProductService {
     return this.productRepository.create(productData);
   }
 
+  async getProducts(): Promise<IProduct[]> {
+    return this.productRepository.find({});
+  }
+
   async getProductByProductId(productId: string): Promise<IProduct | null> {
     return this.productRepository.findByProductId(productId);
   }

@@ -70,6 +70,14 @@ class InvoiceService implements IInvoiceService {
     return newInvoice;
   }
 
+  async getInvoices(): Promise<IInvoice[]> {
+    return this.invoiceRepository.find({});
+  }
+
+  async getInvoiceById(invoiceId: string): Promise<IInvoice | null> {
+    return this.invoiceRepository.findById(invoiceId);
+  }
+
   async cancelInvoice(invoiceId: string): Promise<IInvoice | null> {
     const invoice = await this.invoiceRepository.findById(invoiceId);
 

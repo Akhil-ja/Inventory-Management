@@ -4,6 +4,8 @@ export interface IStockMovementService {
   createStockMovement(
     stockMovementData: IStockMovement,
   ): Promise<IStockMovement>;
+  getStockMovements(): Promise<IStockMovement[]>;
+  getStockMovementById(stockMovementId: string): Promise<IStockMovement | null>;
   stockIn(
     productId: string,
     quantity: number,

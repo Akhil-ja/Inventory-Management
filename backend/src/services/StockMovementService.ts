@@ -26,6 +26,16 @@ class StockMovementService implements IStockMovementService {
     return this.stockMovementRepository.create(stockMovementData);
   }
 
+  async getStockMovements(): Promise<IStockMovement[]> {
+    return this.stockMovementRepository.find({});
+  }
+
+  async getStockMovementById(
+    stockMovementId: string,
+  ): Promise<IStockMovement | null> {
+    return this.stockMovementRepository.findById(stockMovementId);
+  }
+
   async stockIn(
     productId: string,
     quantity: number,

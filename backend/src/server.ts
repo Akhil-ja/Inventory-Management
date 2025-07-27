@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import morgan from 'morgan';
 import cors from 'cors';
 import connectDB from './config/db.js';
+// import routes from './routes/index.js';
+import errorHandler from './middlewares/errorHandler.js';
 
 dotenv.config();
 
@@ -12,13 +14,16 @@ const port = process.env.PORT || 3000;
 // Middlewares
 app.use(cors());
 app.use(express.json());
-app.use(morgan('dev'));
+
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
 connectDB(); //Connect DB
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello');
-});
+// app.use('/', routes);
+
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
