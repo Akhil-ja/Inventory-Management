@@ -17,7 +17,7 @@ export interface IInvoice extends Document {
   products: IInvoiceProduct[];
   totalAmount: number;
   invoiceDate: Date;
-  status: 'created' | 'cancelled';
+  status: 'active' | 'cancelled';
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -17,4 +17,4 @@ const stockMovementSchema: Schema = new Schema(
   { timestamps: true },
 );
 
-export default mongoose.model<IStockMovement>('Product', stockMovementSchema);
+export default mongoose.model<IStockMovement>('StockMovement', stockMovementSchema);

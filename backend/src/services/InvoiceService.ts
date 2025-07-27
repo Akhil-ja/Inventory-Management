@@ -41,20 +41,33 @@ class InvoiceService implements IInvoiceService {
           `Insufficient stock for product ${product.name}. Available: ${product.currentStock}, Requested: ${item.quantity}`,
         );
       }
-
-      await this.productRepository.updateStock(item.productId, -item.quantity);
-
-      const stockMovementData: ICreateStockMovement = {
-        productId: product._id,
-        quantity: item.quantity,
-        type: 'out',
-        reason: 'Sale',
-        remarks: `Invoice ${invoiceData._id}`,
-      };
-      await this.stockMovementRepository.create(stockMovementData);
     }
 
-    return this.invoiceRepository.create(invoiceData);
+    const newInvoice = await this.invoiceRepository.create(invoiceData);
+
+    for (const item of newInvoice.products) {
+      const product = await this.productRepository.findByProductId(
+        item.productId,
+      );
+
+      if (product) {
+        await this.productRepository.updateStock(
+          item.productId,
+          -item.quantity,
+        );
+
+        const stockMovementData: ICreateStockMovement = {
+          productId: product._id,
+          quantity: item.quantity,
+          type: 'out',
+          reason: 'Sale',
+          remarks: `Invoice ${newInvoice._id}`,
+        };
+        await this.stockMovementRepository.create(stockMovementData);
+      }
+    }
+
+    return newInvoice;
   }
 
   async cancelInvoice(invoiceId: string): Promise<IInvoice | null> {
@@ -73,26 +86,27 @@ class InvoiceService implements IInvoiceService {
         item.productId,
       );
 
-      if (!product) {
-        console.warn(
-          `Product with ID ${item.productId} not found during invoice cancellation.`,
-        );
-        continue;
+      if (product) {
+        await this.productRepository.updateStock(item.productId, item.quantity);
+
+        const stockMovementData: ICreateStockMovement = {
+          productId: product._id,
+          quantity: item.quantity,
+          type: 'in',
+          source: 'Invoice Cancellation',
+          remarks: `Invoice ${invoice._id} cancelled`,
+        };
+        await this.stockMovementRepository.create(stockMovementData);
       }
-
-      await this.productRepository.updateStock(item.productId, item.quantity);
-
-      const stockMovementData: ICreateStockMovement = {
-        productId: product._id,
-        quantity: item.quantity,
-        type: 'in',
-        source: 'Invoice Cancellation',
-        remarks: `Invoice ${invoice._id} cancelled`,
-      };
-      await this.stockMovementRepository.create(stockMovementData);
     }
 
-    return this.invoiceRepository.updateStatus(invoiceId, 'cancelled');
+    const cancelledInvoice = await this.invoiceRepository.update(
+      { _id: invoiceId },
+      { status: 'cancelled' },
+      { new: true },
+    );
+
+    return cancelledInvoice;
   }
 }
 

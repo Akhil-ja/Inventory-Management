@@ -45,8 +45,8 @@ const invoiceSchema: Schema<IInvoice> = new Schema(
     },
     status: {
       type: String,
-      enum: ['created', 'cancelled'],
-      default: 'created',
+      enum: ['active', 'cancelled'],
+      default: 'active',
     },
   },
   { timestamps: true },
