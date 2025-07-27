@@ -1,4 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
+import { IStockMovement } from '../interfaces/IStockMovement.js';
 
 const stockMovementSchema: Schema = new Schema(
   {
@@ -15,3 +16,5 @@ const stockMovementSchema: Schema = new Schema(
   },
   { timestamps: true },
 );
+
+export default mongoose.model<IStockMovement>('Product', stockMovementSchema);
