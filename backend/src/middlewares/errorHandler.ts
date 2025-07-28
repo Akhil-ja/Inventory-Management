@@ -1,4 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
+import HttpError from '../utils/HttpError.js';
+import HttpStatus from '../utils/HttpStatus.js';
 
 const errorHandler = (
   err: any,
@@ -8,8 +10,19 @@ const errorHandler = (
 ) => {
   console.error(err.stack);
 
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
+  let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+  let message = 'Internal Server Error';
+
+  if (err instanceof HttpError) {
+    statusCode = err.statusCode;
+    message = err.message;
+  } else if (err.name === 'CastError' && err.kind === 'ObjectId') {
+    statusCode = HttpStatus.BAD_REQUEST;
+    message = 'Invalid ID';
+  } else if (err.name === 'ValidationError') {
+    statusCode = HttpStatus.BAD_REQUEST;
+    message = err.message;
+  }
 
   res.status(statusCode).json({
     success: false,

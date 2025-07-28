@@ -1,3 +1,5 @@
+import HttpError from '../utils/HttpError.js';
+import HttpStatus from '../utils/HttpStatus.js';
 import InvoiceRepository from '../repositories/InvoiceRepository.js';
 import Invoice from '../models/Invoice.js';
 import ProductRepository from '../repositories/ProductRepository.js';
@@ -35,12 +37,13 @@ class InvoiceService implements IInvoiceService {
       );
 
       if (!product) {
-        throw new Error(`Product with ID ${item.productId} not found.`);
+        throw new HttpError(`Product with ID ${item.productId} not found.`, HttpStatus.NOT_FOUND);
       }
 
       if (product.currentStock < item.quantity) {
-        throw new Error(
+        throw new HttpError(
           `Insufficient stock for product ${product.name}. Available: ${product.currentStock}, Requested: ${item.quantity}`,
+          HttpStatus.BAD_REQUEST,
         );
       }
     }
@@ -88,7 +91,7 @@ class InvoiceService implements IInvoiceService {
     const invoice = await this.invoiceRepository.findById(invoiceId);
 
     if (!invoice) {
-      throw new Error('Invoice not found.');
+      throw new HttpError('Invoice not found.', HttpStatus.NOT_FOUND);
     }
 
     if (invoice.status === 'cancelled') {

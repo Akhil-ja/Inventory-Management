@@ -1,3 +1,5 @@
+import HttpError from '../utils/HttpError.js';
+import HttpStatus from '../utils/HttpStatus.js';
 import ProductRepository from '../repositories/ProductRepository.js';
 import Product from '../models/Product.js';
 import { IProduct, ICreateProduct } from '../interfaces/IProduct.js';
@@ -23,7 +25,7 @@ class ProductService implements IProductService {
       productData.productId,
     );
     if (existingProduct) {
-      throw new Error('Product with this productId already exists.');
+      throw new HttpError('Product with this productId already exists.', HttpStatus.CONFLICT);
     }
 
     const productToCreate = {

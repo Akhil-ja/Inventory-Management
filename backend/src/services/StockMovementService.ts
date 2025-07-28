@@ -1,3 +1,5 @@
+import HttpError from '../utils/HttpError.js';
+import HttpStatus from '../utils/HttpStatus.js';
 import StockMovementRepository from '../repositories/StockMovementRepository.js';
 import StockMovement from '../models/StockMovement.js';
 import ProductRepository from '../repositories/ProductRepository.js';
@@ -44,7 +46,7 @@ class StockMovementService implements IStockMovementService {
   ): Promise<IStockMovement> {
     const product = await this.productRepository.findByProductId(productId);
     if (!product) {
-      throw new Error('Product not found.');
+      throw new HttpError('Product not found.', HttpStatus.NOT_FOUND);
     }
 
     await this.productRepository.updateStock(productId, quantity);
@@ -67,11 +69,11 @@ class StockMovementService implements IStockMovementService {
   ): Promise<IStockMovement> {
     const product = await this.productRepository.findByProductId(productId);
     if (!product) {
-      throw new Error('Product not found.');
+      throw new HttpError('Product not found.', HttpStatus.NOT_FOUND);
     }
 
     if (product.currentStock < quantity) {
-      throw new Error('Insufficient stock.');
+      throw new HttpError('Insufficient stock.', HttpStatus.BAD_REQUEST);
     }
 
     await this.productRepository.updateStock(productId, -quantity);
