@@ -16,6 +16,7 @@ import {
   List,
   ListItem,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
@@ -32,6 +33,7 @@ function InvoiceForm() {
   const [customerEmailError, setCustomerEmailError] = useState("");
   const [customerPhoneError, setCustomerPhoneError] = useState("");
   const [productsError, setProductsError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
   const products = useSelector((state) => state.products.items);
@@ -143,6 +145,8 @@ function InvoiceForm() {
       return;
     }
 
+    setLoading(true);
+
     let totalAmount = 0;
     const invoiceProducts = selectedProducts.map((p) => {
       const quantity = quantityMap[p.productId];
@@ -185,6 +189,8 @@ function InvoiceForm() {
         }`
       );
       setMessageType("error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -324,8 +330,9 @@ function InvoiceForm() {
           variant="contained"
           color="primary"
           sx={{ mt: 3 }}
+          disabled={loading}
         >
-          Create Invoice
+          {loading ? <CircularProgress size={24} /> : "Create Invoice"}
         </Button>
       </form>
       {message && (

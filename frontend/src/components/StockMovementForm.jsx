@@ -15,6 +15,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  CircularProgress,
 } from "@mui/material";
 import { showNotification } from "../slices/notification/notificationSlice";
 
@@ -30,6 +31,7 @@ function StockMovementForm({ type }) {
   const [sourceError, setSourceError] = useState("");
   const [reasonError, setReasonError] = useState("");
   const [remarksError, setRemarksError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
   const products = useSelector((state) => state.products.items);
@@ -92,6 +94,8 @@ function StockMovementForm({ type }) {
       return;
     }
 
+    setLoading(true);
+
     const stockMovementData = {
       productId,
       quantity: Number(quantity),
@@ -128,6 +132,8 @@ function StockMovementForm({ type }) {
           type: "error",
         })
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -219,12 +225,18 @@ function StockMovementForm({ type }) {
         />
         <Button
           type="submit"
-          n
           variant="contained"
           color="primary"
           sx={{ mt: 2 }}
+          disabled={loading}
         >
-          {type === "in" ? "Stock In" : "Stock Out"}
+          {loading ? (
+            <CircularProgress size={24} />
+          ) : type === "in" ? (
+            "Stock In"
+          ) : (
+            "Stock Out"
+          )}
         </Button>
       </form>
     </Box>

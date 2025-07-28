@@ -12,6 +12,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  CircularProgress,
 } from "@mui/material";
 import { showNotification } from "../slices/notification/notificationSlice";
 
@@ -26,6 +27,7 @@ function AddProductForm() {
   const [categoryError, setCategoryError] = useState("");
   const [initialStockError, setInitialStockError] = useState("");
   const [priceError, setPriceError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -81,6 +83,8 @@ function AddProductForm() {
       return;
     }
 
+    setLoading(true);
+
     try {
       const resultAction = await dispatch(
         addProduct({
@@ -113,6 +117,8 @@ function AddProductForm() {
           type: "error",
         })
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -198,8 +204,9 @@ function AddProductForm() {
           variant="contained"
           color="primary"
           sx={{ mt: 2 }}
+          disabled={loading}
         >
-          Add Product
+          {loading ? <CircularProgress size={24} /> : "Add Product"}
         </Button>
       </form>
     </Box>
