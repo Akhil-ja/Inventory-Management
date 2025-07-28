@@ -22,15 +22,70 @@ function AddProductForm() {
   const [initialStock, setInitialStock] = useState("");
   const [price, setPrice] = useState("");
 
+  const [nameError, setNameError] = useState("");
+  const [categoryError, setCategoryError] = useState("");
+  const [initialStockError, setInitialStockError] = useState("");
+  const [priceError, setPriceError] = useState("");
+
   const dispatch = useDispatch();
+
+  const validateForm = () => {
+    let isValid = true;
+
+    const trimmedName = name.trim();
+    const trimmedCategory = category.trim();
+
+    if (!trimmedName) {
+      setNameError("Product name cannot be empty.");
+      isValid = false;
+    } else if (/\d/.test(trimmedName)) {
+      setNameError("Product name cannot contain numbers.");
+      isValid = false;
+    } else {
+      setNameError("");
+    }
+
+    if (!trimmedCategory) {
+      setCategoryError("Category cannot be empty.");
+      isValid = false;
+    } else if (/\d/.test(trimmedCategory)) {
+      setCategoryError("Category cannot contain numbers.");
+      isValid = false;
+    } else {
+      setCategoryError("");
+    }
+
+    const stockNum = Number(initialStock);
+    if (isNaN(stockNum) || stockNum < 0) {
+      setInitialStockError("Initial stock must be a non-negative number.");
+      isValid = false;
+    } else {
+      setInitialStockError("");
+    }
+
+    const priceNum = Number(price);
+    if (isNaN(priceNum) || priceNum < 0) {
+      setPriceError("Price must be a non-negative number.");
+      isValid = false;
+    } else {
+      setPriceError("");
+    }
+
+    return isValid;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     try {
       const resultAction = await dispatch(
         addProduct({
-          name,
-          category,
+          name: name.trim(),
+          category: category.trim(),
           unit,
           initialStock: Number(initialStock),
           price: Number(price),
@@ -84,6 +139,8 @@ function AddProductForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+          error={!!nameError}
+          helperText={nameError}
         />
         <TextField
           label="Category"
@@ -93,6 +150,8 @@ function AddProductForm() {
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           required
+          error={!!categoryError}
+          helperText={categoryError}
         />
         <FormControl fullWidth margin="normal">
           <InputLabel id="unit-label">Unit</InputLabel>
@@ -117,6 +176,9 @@ function AddProductForm() {
           value={initialStock}
           onChange={(e) => setInitialStock(e.target.value)}
           required
+          error={!!initialStockError}
+          helperText={initialStockError}
+          inputProps={{ min: "0" }}
         />
         <TextField
           label="Price"
@@ -127,6 +189,9 @@ function AddProductForm() {
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           required
+          error={!!priceError}
+          helperText={priceError}
+          inputProps={{ min: "0" }}
         />
         <Button
           type="submit"

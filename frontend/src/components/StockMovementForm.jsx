@@ -25,17 +25,72 @@ function StockMovementForm({ type }) {
   const [reason, setReason] = useState("");
   const [remarks, setRemarks] = useState("");
 
+  const [productIdError, setProductIdError] = useState("");
+  const [quantityError, setQuantityError] = useState("");
+  const [sourceError, setSourceError] = useState("");
+  const [reasonError, setReasonError] = useState("");
+  const [remarksError, setRemarksError] = useState("");
+
   const dispatch = useDispatch();
   const products = useSelector((state) => state.products.items);
 
+  const validateForm = () => {
+    let isValid = true;
+
+    if (!productId) {
+      setProductIdError("Please select a product.");
+      isValid = false;
+    } else {
+      setProductIdError("");
+    }
+
+    const numQuantity = Number(quantity);
+    if (isNaN(numQuantity) || numQuantity <= 0) {
+      setQuantityError("Quantity must be a positive number.");
+      isValid = false;
+    } else {
+      setQuantityError("");
+    }
+
+    if (type === "in") {
+      if (!source.trim()) {
+        setSourceError("Source cannot be empty.");
+        isValid = false;
+      } else {
+        setSourceError("");
+      }
+    } else if (type === "out") {
+      if (!reason.trim()) {
+        setReasonError("Reason cannot be empty.");
+        isValid = false;
+      } else {
+        setReasonError("");
+      }
+    }
+
+    if (remarks && !remarks.trim()) {
+      setRemarksError("Remarks cannot be spaces.");
+      isValid = false;
+    } else {
+      setRemarksError("");
+    }
+
+    return isValid;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     const stockMovementData = {
       productId,
       quantity: Number(quantity),
-      remarks,
-      ...(type === "in" && { source }),
-      ...(type === "out" && { reason }),
+      remarks: remarks.trim(),
+      ...(type === "in" && { source: source.trim() }),
+      ...(type === "out" && { reason: reason.trim() }),
     };
     try {
       let resultAction;
@@ -84,7 +139,7 @@ function StockMovementForm({ type }) {
         {type === "in" ? "Stock In" : "Stock Out"}
       </Typography>
       <form onSubmit={handleSubmit}>
-        <FormControl fullWidth margin="normal">
+        <FormControl fullWidth margin="normal" error={!!productIdError}>
           <InputLabel id="product-select-label">Product</InputLabel>
           <Select
             labelId="product-select-label"
@@ -100,6 +155,11 @@ function StockMovementForm({ type }) {
               </MenuItem>
             ))}
           </Select>
+          {productIdError && (
+            <Typography color="error" variant="caption">
+              {productIdError}
+            </Typography>
+          )}
         </FormControl>
         <TextField
           label="Quantity"
@@ -110,6 +170,9 @@ function StockMovementForm({ type }) {
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
           required
+          error={!!quantityError}
+          helperText={quantityError}
+          inputProps={{ min: "1" }}
         />
         {type === "in" && (
           <TextField
@@ -120,6 +183,8 @@ function StockMovementForm({ type }) {
             value={source}
             onChange={(e) => setSource(e.target.value)}
             required
+            error={!!sourceError}
+            helperText={sourceError}
           />
         )}
         {type === "out" && (
@@ -131,6 +196,8 @@ function StockMovementForm({ type }) {
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             required
+            error={!!reasonError}
+            helperText={reasonError}
           />
         )}
         <TextField
@@ -140,9 +207,12 @@ function StockMovementForm({ type }) {
           margin="normal"
           value={remarks}
           onChange={(e) => setRemarks(e.target.value)}
+          error={!!remarksError}
+          helperText={remarksError}
         />
         <Button
           type="submit"
+          n
           variant="contained"
           color="primary"
           sx={{ mt: 2 }}

@@ -28,6 +28,11 @@ function InvoiceForm() {
   const [message, setMessage] = useState(null);
   const [messageType, setMessageType] = useState(null);
 
+  const [customerNameError, setCustomerNameError] = useState("");
+  const [customerEmailError, setCustomerEmailError] = useState("");
+  const [customerPhoneError, setCustomerPhoneError] = useState("");
+  const [productsError, setProductsError] = useState("");
+
   const dispatch = useDispatch();
   const products = useSelector((state) => state.products.items);
 
@@ -44,11 +49,17 @@ function InvoiceForm() {
         },
       ]);
       setQuantityMap({ ...quantityMap, [productId]: 1 });
+      setProductsError("");
     }
   };
 
   const handleQuantityChange = (productId, quantity) => {
-    setQuantityMap({ ...quantityMap, [productId]: Number(quantity) });
+    const numQuantity = Number(quantity);
+    // eslint-disable-next-line no-empty
+    if (isNaN(numQuantity) || numQuantity <= 0) {
+    } else {
+      setQuantityMap({ ...quantityMap, [productId]: numQuantity });
+    }
   };
 
   const handleRemoveProduct = (productId) => {
@@ -60,10 +71,70 @@ function InvoiceForm() {
     setQuantityMap(newQuantityMap);
   };
 
+  const validateForm = () => {
+    let isValid = true;
+
+    const trimmedCustomerName = customerName.trim();
+    const trimmedCustomerEmail = customerEmail.trim();
+    const trimmedCustomerPhone = customerPhone.trim();
+
+    if (!trimmedCustomerName) {
+      setCustomerNameError("Customer name cannot be empty.");
+      isValid = false;
+    } else if (/\d/.test(trimmedCustomerName)) {
+      setCustomerNameError("Customer name cannot contain numbers.");
+      isValid = false;
+    } else {
+      setCustomerNameError("");
+    }
+
+    if (!trimmedCustomerEmail) {
+      setCustomerEmailError("Customer email cannot be empty.");
+      isValid = false;
+    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(trimmedCustomerEmail)) {
+      setCustomerEmailError("Invalid email format.");
+      isValid = false;
+    } else {
+      setCustomerEmailError("");
+    }
+
+    if (trimmedCustomerPhone && !/^\d{10}$/.test(trimmedCustomerPhone)) {
+      setCustomerPhoneError("Phone number must be 10 digits.");
+      isValid = false;
+    } else {
+      setCustomerPhoneError("");
+    }
+
+    if (selectedProducts.length === 0) {
+      setProductsError("Please add at least one product to the invoice.");
+      isValid = false;
+    } else {
+      let allQuantitiesValid = true;
+      selectedProducts.forEach((p) => {
+        const quantity = quantityMap[p.productId];
+        if (isNaN(quantity) || quantity <= 0) {
+          allQuantitiesValid = false;
+        }
+      });
+      if (!allQuantitiesValid) {
+        setProductsError("All product quantities must be positive numbers.");
+        isValid = false;
+      } else {
+        setProductsError("");
+      }
+    }
+
+    return isValid;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage(null);
     setMessageType(null);
+
+    if (!validateForm()) {
+      return;
+    }
 
     let totalAmount = 0;
     const invoiceProducts = selectedProducts.map((p) => {
@@ -82,9 +153,9 @@ function InvoiceForm() {
       const resultAction = await dispatch(
         createInvoice({
           customerInfo: {
-            name: customerName,
-            email: customerEmail,
-            phone: customerPhone,
+            name: customerName.trim(),
+            email: customerEmail.trim(),
+            phone: customerPhone.trim(),
           },
           products: invoiceProducts,
           totalAmount: totalAmount,
@@ -133,6 +204,8 @@ function InvoiceForm() {
           value={customerName}
           onChange={(e) => setCustomerName(e.target.value)}
           required
+          error={!!customerNameError}
+          helperText={customerNameError}
         />
         <TextField
           label="Customer Email"
@@ -143,6 +216,8 @@ function InvoiceForm() {
           value={customerEmail}
           onChange={(e) => setCustomerEmail(e.target.value)}
           required
+          error={!!customerEmailError}
+          helperText={customerEmailError}
         />
         <TextField
           label="Customer Phone"
@@ -152,12 +227,14 @@ function InvoiceForm() {
           type="tel"
           value={customerPhone}
           onChange={(e) => setCustomerPhone(e.target.value)}
+          error={!!customerPhoneError}
+          helperText={customerPhoneError}
         />
 
         <Typography variant="h5" component="h3" sx={{ mt: 3, mb: 2 }}>
           Products for Invoice
         </Typography>
-        <FormControl fullWidth margin="normal">
+        <FormControl fullWidth margin="normal" error={!!productsError}>
           <InputLabel id="add-product-label">Add Product</InputLabel>
           <Select
             labelId="add-product-label"
@@ -172,6 +249,11 @@ function InvoiceForm() {
               </MenuItem>
             ))}
           </Select>
+          {productsError && (
+            <Typography color="error" variant="caption">
+              {productsError}
+            </Typography>
+          )}
         </FormControl>
 
         {selectedProducts.length > 0 && (
@@ -205,13 +287,23 @@ function InvoiceForm() {
                     </Typography>
                     <TextField
                       type="number"
-                      value={quantityMap[product.productId] || 1}
+                      value={quantityMap[product.productId] || ""}
                       onChange={(e) =>
                         handleQuantityChange(product.productId, e.target.value)
                       }
                       inputProps={{ min: "1" }}
                       sx={{ width: 80, ml: 2 }}
                       size="small"
+                      error={
+                        isNaN(quantityMap[product.productId]) ||
+                        quantityMap[product.productId] <= 0
+                      }
+                      helperText={
+                        isNaN(quantityMap[product.productId]) ||
+                        quantityMap[product.productId] <= 0
+                          ? "Positive quantity required"
+                          : ""
+                      }
                     />
                   </Box>
                 </ListItem>
