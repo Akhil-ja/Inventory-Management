@@ -62,10 +62,12 @@ function InvoiceForm() {
   };
 
   const handleQuantityChange = (productId, quantity) => {
+    if (quantity === "") {
+      setQuantityMap({ ...quantityMap, [productId]: "" });
+      return;
+    }
     const numQuantity = Number(quantity);
-    // eslint-disable-next-line no-empty
-    if (isNaN(numQuantity) || numQuantity <= 0) {
-    } else {
+    if (!isNaN(numQuantity) && numQuantity > 0) {
       setQuantityMap({ ...quantityMap, [productId]: numQuantity });
     }
   };
