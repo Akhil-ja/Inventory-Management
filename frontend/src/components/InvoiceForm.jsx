@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { createInvoice } from "../slices/invoices/invoiceSlice";
 import { fetchProducts } from "../slices/products/productSlice";
 import { unwrapResult } from "@reduxjs/toolkit";
+import { showNotification } from "../slices/notification/notificationSlice";
 import {
   Box,
   Typography,
@@ -26,8 +27,6 @@ function InvoiceForm() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [quantityMap, setQuantityMap] = useState({});
-  const [message, setMessage] = useState(null);
-  const [messageType, setMessageType] = useState(null);
 
   const [customerNameError, setCustomerNameError] = useState("");
   const [customerEmailError, setCustomerEmailError] = useState("");
@@ -138,8 +137,6 @@ function InvoiceForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(null);
-    setMessageType(null);
 
     if (!validateForm()) {
       return;
@@ -173,8 +170,12 @@ function InvoiceForm() {
         })
       );
       unwrapResult(resultAction);
-      setMessage("Invoice created successfully!");
-      setMessageType("success");
+      dispatch(
+        showNotification({
+          message: "Invoice created successfully!",
+          type: "success",
+        })
+      );
       dispatch(fetchProducts());
 
       setCustomerName("");
@@ -183,12 +184,14 @@ function InvoiceForm() {
       setSelectedProducts([]);
       setQuantityMap({});
     } catch (err) {
-      setMessage(
-        `Failed to create invoice: ${
-          err.message || err.error || JSON.stringify(err)
-        }`
+      dispatch(
+        showNotification({
+          message: `Failed to create invoice: ${
+            err.message || err.error || JSON.stringify(err)
+          }`,
+          type: "error",
+        })
       );
-      setMessageType("error");
     } finally {
       setLoading(false);
     }
@@ -304,7 +307,6 @@ function InvoiceForm() {
                       onChange={(e) =>
                         handleQuantityChange(product.productId, e.target.value)
                       }
-                      inputProps={{ min: "1" }}
                       sx={{ width: 80, ml: 2 }}
                       size="small"
                       error={
@@ -335,14 +337,6 @@ function InvoiceForm() {
           {loading ? <CircularProgress size={24} /> : "Create Invoice"}
         </Button>
       </form>
-      {message && (
-        <Alert
-          severity={messageType === "error" ? "error" : "success"}
-          sx={{ mt: 2 }}
-        >
-          {message}
-        </Alert>
-      )}
     </Box>
   );
 }
