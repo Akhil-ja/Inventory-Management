@@ -12,7 +12,13 @@ const app: Express = express();
 const port = process.env.PORT || 3000;
 
 // Middlewares
-app.use(cors());
+const corsOptions = {
+  origin: process.env.FRONTEND_URL,
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 if (process.env.NODE_ENV === 'development') {
