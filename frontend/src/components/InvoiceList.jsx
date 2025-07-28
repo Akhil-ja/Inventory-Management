@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  fetchInvoices,
-  cancelInvoice,
-} from "../slices/invoices/invoiceSlice";
+import { fetchInvoices, cancelInvoice } from "../slices/invoices/invoiceSlice";
 import { fetchProducts } from "../slices/products/productSlice";
 import { unwrapResult } from "@reduxjs/toolkit";
+import { showNotification } from "../slices/notification/notificationSlice";
 import {
   Table,
   TableBody,
@@ -22,41 +20,51 @@ import {
 } from "@mui/material";
 
 function InvoiceList() {
+  const [cancellingInvoiceId, setCancellingInvoiceId] = useState(null);
+
   const dispatch = useDispatch();
-  const invoices = useSelector((state) => state.invoices.items);
-  const invoiceStatus = useSelector((state) => state.invoices.status);
-  const error = useSelector((state) => state.invoices.error);
-  const [message, setMessage] = useState(null);
-  const [messageType, setMessageType] = useState(null);
+  const {
+    items: invoices,
+    status,
+    error,
+  } = useSelector((state) => state.invoices);
+  const productStatus = useSelector((state) => state.products.status);
 
   useEffect(() => {
-    if (invoiceStatus === "idle") {
+    if (status === "idle") {
       dispatch(fetchInvoices());
     }
-  }, [invoiceStatus, dispatch]);
+    if (productStatus === "idle") {
+      dispatch(fetchProducts());
+    }
+  }, [status, productStatus, dispatch]);
 
   const handleCancelInvoice = async (invoiceId) => {
-    if (window.confirm("Are you sure you want to cancel this invoice?")) {
-      setMessage(null);
-      setMessageType(null);
-      try {
-        const resultAction = await dispatch(cancelInvoice(invoiceId));
-        unwrapResult(resultAction);
-        setMessage("Invoice cancelled successfully!");
-        setMessageType("success");
-        dispatch(fetchProducts());
-      } catch (err) {
-        setMessage(
-          `Failed to cancel invoice: ${
+    setCancellingInvoiceId(invoiceId); // Set loading for this invoice
+    try {
+      const resultAction = await dispatch(cancelInvoice(invoiceId));
+      unwrapResult(resultAction);
+      dispatch(
+        showNotification({
+          message: "Invoice cancelled successfully!",
+          type: "success",
+        })
+      );
+    } catch (err) {
+      dispatch(
+        showNotification({
+          message: `Failed to cancel invoice: ${
             err.message || err.error || JSON.stringify(err)
-          }`
-        );
-        setMessageType("error");
-      }
+          }`,
+          type: "error",
+        })
+      );
+    } finally {
+      setCancellingInvoiceId(null); // Reset loading
     }
   };
 
-  if (invoiceStatus === "loading") {
+  if (status === "loading") {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
         <CircularProgress />
@@ -64,7 +72,7 @@ function InvoiceList() {
     );
   }
 
-  if (invoiceStatus === "failed") {
+  if (status === "failed") {
     return <Typography color="error">Error: {error}</Typography>;
   }
 
@@ -73,23 +81,15 @@ function InvoiceList() {
       <Typography variant="h4" component="h2" gutterBottom>
         Invoice List
       </Typography>
-      {message && (
-        <Alert
-          severity={messageType === "error" ? "error" : "success"}
-          sx={{ mb: 2 }}
-        >
-          {message}
-        </Alert>
-      )}
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="invoice table">
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>Invoice Number</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Customer Name</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Total Amount</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Invoice Number</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Customer Name</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Total Amount</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -109,11 +109,22 @@ function InvoiceList() {
                 <TableCell>
                   {invoice.status !== "cancelled" && (
                     <Button
-                      variant="outlined"
-                      color="error"
+                      variant="contained"
+                      color="secondary"
                       onClick={() => handleCancelInvoice(invoice._id)}
+                      disabled={
+                        invoice.status === "cancelled" ||
+                        cancellingInvoiceId === invoice._id
+                      }
+                      startIcon={
+                        cancellingInvoiceId === invoice._id ? (
+                          <CircularProgress size={20} color="inherit" />
+                        ) : null
+                      }
                     >
-                      Cancel
+                      {cancellingInvoiceId === invoice._id
+                        ? "Cancelling..."
+                        : "Cancel"}
                     </Button>
                   )}
                 </TableCell>
