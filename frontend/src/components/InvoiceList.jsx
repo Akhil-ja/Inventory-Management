@@ -82,56 +82,62 @@ function InvoiceList() {
         Invoice List
       </Typography>
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="invoice table">
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: "bold" }}>Invoice Number</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Customer Name</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Total Amount</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {invoices.map((invoice) => (
-              <TableRow
-                key={invoice._id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {invoice.invoiceNumber}
-                </TableCell>
-                <TableCell>{invoice.customerInfo.name}</TableCell>
-                <TableCell align="">
-                  {invoice.totalAmount.toFixed(2)} Rs
-                </TableCell>
-                <TableCell>{invoice.status}</TableCell>
-                <TableCell>
-                  {invoice.status !== "cancelled" && (
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => handleCancelInvoice(invoice._id)}
-                      disabled={
-                        invoice.status === "cancelled" ||
-                        cancellingInvoiceId === invoice._id
-                      }
-                      startIcon={
-                        cancellingInvoiceId === invoice._id ? (
-                          <CircularProgress size={20} color="inherit" />
-                        ) : null
-                      }
-                    >
-                      {cancellingInvoiceId === invoice._id
-                        ? "Cancelling..."
-                        : "Cancel"}
-                    </Button>
-                  )}
-                </TableCell>
+        {invoices.length === 0 ? (
+          <Typography variant="subtitle1" sx={{ p: 2, textAlign: "center" }}>
+            No invoices found. Please create a new invoice.
+          </Typography>
+        ) : (
+          <Table sx={{ minWidth: 650 }} aria-label="invoice table">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: "bold" }}>Invoice Number</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Customer Name</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Total Amount</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {invoices.map((invoice) => (
+                <TableRow
+                  key={invoice._id}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    {invoice.invoiceNumber}
+                  </TableCell>
+                  <TableCell>{invoice.customerInfo.name}</TableCell>
+                  <TableCell align="">
+                    {invoice.totalAmount.toFixed(2)} Rs
+                  </TableCell>
+                  <TableCell>{invoice.status}</TableCell>
+                  <TableCell>
+                    {invoice.status !== "cancelled" && (
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={() => handleCancelInvoice(invoice._id)}
+                        disabled={
+                          invoice.status === "cancelled" ||
+                          cancellingInvoiceId === invoice._id
+                        }
+                        startIcon={
+                          cancellingInvoiceId === invoice._id ? (
+                            <CircularProgress size={20} color="inherit" />
+                          ) : null
+                        }
+                      >
+                        {cancellingInvoiceId === invoice._id
+                          ? "Cancelling..."
+                          : "Cancel"}
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </TableContainer>
     </Box>
   );

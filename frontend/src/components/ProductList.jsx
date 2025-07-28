@@ -44,35 +44,41 @@ function ProductList() {
         Product List
       </Typography>
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="product table">
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>Product ID</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Name</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Category</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Unit</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 'bold' }}>Current Stock</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 'bold' }}>Price</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {products.map((product) => (
-              <TableRow
-                key={product._id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {product.productId}
-                </TableCell>
-                <TableCell>{product.name}</TableCell>
-                <TableCell>{product.category}</TableCell>
-                <TableCell>{product.unit}</TableCell>
-                <TableCell align="right">{product.currentStock}</TableCell>
-                <TableCell align="right">{product.price} Rs</TableCell>
+        {products.length === 0 ? (
+          <Typography variant="subtitle1" sx={{ p: 2, textAlign: "center" }}>
+            No products found. Please add new products.
+          </Typography>
+        ) : (
+          <Table sx={{ minWidth: 650 }} aria-label="product table">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 'bold' }}>Product ID</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Name</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Category</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Unit</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 'bold' }}>Current Stock</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 'bold' }}>Price</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {products.map((product) => (
+                <TableRow
+                  key={product._id}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    {product.productId}
+                  </TableCell>
+                  <TableCell>{product.name}</TableCell>
+                  <TableCell>{product.category}</TableCell>
+                  <TableCell>{product.unit}</TableCell>
+                  <TableCell align="right">{product.currentStock}</TableCell>
+                  <TableCell align="right">{product.price} Rs</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </TableContainer>
     </Box>
   );
