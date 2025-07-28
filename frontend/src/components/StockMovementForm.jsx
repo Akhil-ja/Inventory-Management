@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   createStockIn,
@@ -33,6 +33,13 @@ function StockMovementForm({ type }) {
 
   const dispatch = useDispatch();
   const products = useSelector((state) => state.products.items);
+  const productStatus = useSelector((state) => state.products.status);
+
+  useEffect(() => {
+    if (productStatus === "idle") {
+      dispatch(fetchProducts());
+    }
+  }, [productStatus, dispatch]);
 
   const validateForm = () => {
     let isValid = true;
